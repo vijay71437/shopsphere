@@ -1,5 +1,6 @@
 package com.shopsphere.order.service;
 
+import com.shopsphere.order.client.InventoryClient;
 import com.shopsphere.order.client.ProductClient;
 import com.shopsphere.order.dto.*;
 import com.shopsphere.order.entity.Order;
@@ -17,53 +18,13 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductClient productClient;
+    private final OrderSagaService orderSagaService;
 
     @Override
-    @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request) {
-
-        Order order = Order.builder()
-                .userId(request.userId())
-                .totalAmount(BigDecimal.ZERO)
-                .build();
-
-        BigDecimal totalAmount = BigDecimal.ZERO;
-
-        for (OrderItemRequest itemRequest : request.items()) {
-
-            ProductResponse product =
-                    productClient.getProduct(itemRequest.productId());
-
-            if (!Boolean.TRUE.equals(product.active())) {
-                throw new RuntimeException(
-                        "Product is not active: " + product.id()
-                );
-            }
-
-            BigDecimal itemTotal =
-                    product.price()
-                            .multiply(
-                                    BigDecimal.valueOf(itemRequest.quantity())
-                            );
-
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .productId(product.id())
-                    .quantity(itemRequest.quantity())
-                    .price(product.price())
-                    .build();
-
-            order.getItems().add(orderItem);
-
-            totalAmount = totalAmount.add(itemTotal);
-        }
-
-        order.setTotalAmount(totalAmount);
-
-        Order savedOrder = orderRepository.save(order);
-
-        return mapToResponse(savedOrder);
+    public OrderResponse createOrder(
+            CreateOrderRequest request
+    ) {
+        return orderSagaService.createOrder(request);
     }
 
     @Override
