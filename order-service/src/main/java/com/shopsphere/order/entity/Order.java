@@ -31,6 +31,14 @@ public class Order {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer reservedItems = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer totalItems = 0;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -45,6 +53,7 @@ public class Order {
 
     @PrePersist
     protected void onCreate() {
+
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 

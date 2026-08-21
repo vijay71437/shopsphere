@@ -19,12 +19,16 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderSagaService orderSagaService;
+    private final OrderKafkaSagaService orderKafkaSagaService;
 
     @Override
     public OrderResponse createOrder(
             CreateOrderRequest request
     ) {
-        return orderSagaService.createOrder(request);
+
+        return orderKafkaSagaService.createOrder(
+                request
+        );
     }
 
     @Override
